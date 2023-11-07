@@ -1,0 +1,29 @@
+- hosts: ec2_instances
+  become: true
+  tasks:
+        
+    - name: Stop Apache service (Systemd)
+      systemd:
+        name: apache2
+        state: stopped
+
+    - name: Docker Compose up
+      shell: docker-compose up -d
+      args:
+        chdir: /home/ubuntu/livewire-todo
+      become: true
+    
+
+    - name: Access the terminal of the container and run a command
+      shell: docker exec -it livewire-todo_laravel.test_1 /bin/bash -c "composer update"
+      ignore_errors: yes
+      become: true
+
+    - name: Access the terminal of the container and run a command
+      shell: docker exec -it livewire-todo_laravel.test_1 /bin/bash -c "php artisan migrate"
+      ignore_errors: yes
+      become: true
+
+    - name: restart container 
+      shell: docker restart livewire-todo_laravel.test_1
+      become: true
